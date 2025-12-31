@@ -1,0 +1,9 @@
+<details open class="comment">
+    <summary class="author">
+        {{item.by | assigned_or("")}} - {{item.humantime()}}
+    </summary>
+    <div class="text">{{item.text | assigned_or("") | safe}}</div>
+    {% if comments.is_some() %}
+    <div class="children">{{comments | assigned_or("") | safe}}</div>
+    {% endif %}
+</details>

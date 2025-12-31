@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block content %}
+<div>
+    <div class="comment-header">
+        <h3>{{item.title | assigned_or("")}}</h3>
+        <a href="{{item.url | assigned_or("")}}" rel="noreferrer">{{item.display_url_long()}}</a>
+        <div class="comment-header-author">By: {{item.by | assigned_or("")}}</div>
+        <a href="{{item.display_hn_url()}}" rel="noreferrer">HN Link</a>
+        <div class="text">{{item.text | assigned_or("")|safe}}</div>
+    </div>
+    <div class="comments">
+        {{comments | assigned_or("") | safe}}
+    </div>
+</div>
+{% endblock %}

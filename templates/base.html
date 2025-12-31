@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+    <head>
+        <link
+            rel="shortcut icon"
+            href="{{static_base}}/favicon.ico"
+            type="image/x-icon"
+        />
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>rHXN - {{title}}</title>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, user-scalable=no"
+        />
+        <link rel="stylesheet" href="{{static_base}}/main.css" />
+    </head>
+    <body>
+        <a href="/">
+            <header>
+                <div class="header-title">
+                    <h3>rHXN</h3>
+                </div>
+            </header>
+        </a>
+        <div id="container" class="items">
+            {% block content %}
+            <p>Placeholder content</p>
+            {% endblock %}
+        </div>
+        <footer>
+            Yolo'd by blopker.
+            <a href="https://github.com/blopker/rhxn">Source</a>.
+        </footer>
+    </body>
+</html>

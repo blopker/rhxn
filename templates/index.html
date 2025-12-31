@@ -1,0 +1,20 @@
+{% extends "base.html" %} {% block content %} {% for story in stories %}
+<div class="list-item">
+    <a href="{{story.url | assigned_or("#")}}" rel="noreferrer">
+        <div class="story">
+            <h3>{{story.title| assigned_or("")}}</h3>
+            <div class="host">{{story.display_url()}}</div>
+        </div>
+    </a>
+    <a href="/item/{{story.id| assigned_or("")}}">
+        <aside>
+            <div class="comment-count">
+                {{story.descendants | assigned_or(0)}}
+            </div>
+            <div class="score">{{story.score| assigned_or("")}}</div>
+        </aside>
+    </a>
+</div>
+{% else %}
+<li>No stories</li>
+{% endfor %} {% endblock %}
