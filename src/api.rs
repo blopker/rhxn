@@ -10,13 +10,13 @@ static TOP_STORIES: LazyLock<String> = LazyLock::new(|| format!("{}/v0/topstorie
 static RCLIENT: LazyLock<reqwest::Client> = LazyLock::new(reqwest::Client::new);
 
 pub async fn run() -> Result<(), reqwest::Error> {
-    println!("Getting items");
+    tracing::info!("Getting items");
     let resp = RCLIENT.get(TOP_STORIES.as_str()).send().await?;
     let mut ids: Vec<types::ItemID> = resp.json().await?;
     ids.truncate(30);
     db::DB.set_top(ids.clone());
     fetch_items(ids).await;
-    println!("Done");
+    tracing::info!("Done");
     Ok(())
 }
 
@@ -45,7 +45,7 @@ async fn fetch_items(initial_ids: Vec<types::ItemID>) {
                     pending.extend(item.kids.iter().copied());
                     db::DB.items.insert(item.id, item);
                 }
-                Err(e) => eprintln!("Failed to fetch item: {}", e),
+                Err(e) => tracing::error!("Failed to fetch item: {}", e),
             }
         }
     }

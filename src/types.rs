@@ -66,11 +66,15 @@ pub struct Item {
 
 impl Item {
     pub fn display_url(&self) -> String {
+        // println!("Rendering {:?}", self);
         match self.item_type {
             Some(ItemType::Story) => {
                 // Only show hostname unless it's on the 'allow list' of domains
                 let allowed_domains = ["github.com", "news.ycombinator.com"];
-                let url = self.url.clone().unwrap_or_default();
+                let url = self
+                    .url
+                    .clone()
+                    .unwrap_or(format!("news.ycombinator.com/item?id={}", self.id));
                 // remove protocol
                 let url = url.split_once("://").unwrap_or(("", &url)).1;
                 let domain = url.split('/').nth(0).unwrap_or_default();
@@ -88,9 +92,6 @@ impl Item {
             .clone()
             .unwrap_or(format!("https://news.ycombinator.com/item?id={}", self.id))
     }
-    pub fn display_hn_url(&self) -> String {
-        format!("https://news.ycombinator.com/item?id={}", self.id)
-    }
     pub fn humantime(&self) -> String {
         let current_epoch = match SystemTime::now().duration_since(UNIX_EPOCH) {
             Ok(n) => n,
@@ -103,5 +104,17 @@ impl Item {
         };
 
         TIMEAGO_FORMATTER.convert(current_epoch - t)
+    }
+    pub fn href_url(&self) -> String {
+        match &self.url {
+            Some(url) => url.clone(),
+            None => self.rhxn_url(),
+        }
+    }
+    pub fn rhxn_url(&self) -> String {
+        format!("/item/{}", self.id)
+    }
+    pub fn hn_url(&self) -> String {
+        format!("https://news.ycombinator.com/item?id={}", self.id)
     }
 }

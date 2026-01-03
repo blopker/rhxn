@@ -10,15 +10,13 @@ use axum::{
 pub struct IndexTemplate<'a> {
     pub stories: Vec<types::Item>,
     pub title: &'a str,
-    pub static_base: &'a str,
 }
 
 #[derive(Template)]
 #[template(path = "item.html")]
-pub struct ItemTemplate<'a> {
+pub struct ItemTemplate {
     pub item: types::Item,
     pub title: String,
-    pub static_base: &'a str,
     pub comments: Option<String>,
 }
 

@@ -5,7 +5,7 @@ mod types;
 
 use askama::Template;
 use axum::{Router, extract, http::StatusCode, response::IntoResponse, routing::get};
-use tower_http::{compression::CompressionLayer, services::ServeDir};
+use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -23,7 +23,7 @@ async fn main() {
     tokio::spawn(async {
         loop {
             if let Err(e) = api::run().await {
-                eprintln!("API error: {}", e);
+                tracing::error!("API error: {}", e);
             }
             tokio::time::sleep(std::time::Duration::from_secs(5 * 60)).await;
         }
@@ -33,9 +33,7 @@ async fn main() {
     let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     let addr = format!("{}:{}", host, port);
-    let listener = tokio::net::TcpListener::bind(&addr)
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     tracing::debug!("listening on http://{}", listener.local_addr().unwrap());
     let _ = axum::serve(listener, app).await;
 }
@@ -45,7 +43,7 @@ fn app() -> Router {
         .route("/", get(index))
         .route("/item/{id}", get(item))
         .nest_service("/assets", ServeDir::new("assets"))
-        .layer(CompressionLayer::new())
+        .fallback(handler_404)
 }
 
 async fn item(extract::Path(id): extract::Path<String>) -> impl IntoResponse {
@@ -67,12 +65,11 @@ async fn item(extract::Path(id): extract::Path<String>) -> impl IntoResponse {
             let template = templates::ItemTemplate {
                 item,
                 title,
-                static_base: "/assets",
                 comments,
             };
             templates::HtmlTemplate(template).into_response()
         }
-        _ => (StatusCode::NOT_FOUND, "nothing to see here").into_response(),
+        _ => handler_404().await.into_response(),
     }
 }
 
@@ -111,7 +108,11 @@ fn render_comments_inner(
             out.push_str(
                 &templates::CommentTemplate {
                     item: comment.clone(),
-                    comments: if child_html.is_empty() { None } else { Some(child_html) },
+                    comments: if child_html.is_empty() {
+                        None
+                    } else {
+                        Some(child_html)
+                    },
                 }
                 .render()
                 .unwrap(),
@@ -124,37 +125,10 @@ async fn index() -> impl IntoResponse {
     let template = templates::IndexTemplate {
         stories: db::DB.get_top_stories(),
         title: "Stories",
-        static_base: "/assets",
     };
     templates::HtmlTemplate(template)
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use axum::{
-//         body::Body,
-//         http::{Request, StatusCode},
-//     };
-//     use http_body_util::BodyExt;
-//     use tower::ServiceExt;
-
-//     #[tokio::test]
-//     async fn test_main() {
-//         let response = app()
-//             .oneshot(
-//                 Request::builder()
-//                     .uri("/greet/Foo")
-//                     .body(Body::empty())
-//                     .unwrap(),
-//             )
-//             .await
-//             .unwrap();
-//         assert_eq!(response.status(), StatusCode::OK);
-//         let body = response.into_body();
-//         let bytes = body.collect().await.unwrap().to_bytes();
-//         let html = String::from_utf8(bytes.to_vec()).unwrap();
-
-//         assert_eq!(html, "<h1>Hello, Foo!</h1>");
-//     }
-// }
+async fn handler_404() -> impl IntoResponse {
+    (StatusCode::NOT_FOUND, "404")
+}

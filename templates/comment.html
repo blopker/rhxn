@@ -1,9 +1,10 @@
 <details open class="comment">
     <summary class="author">
-        {{item.by | assigned_or("")}} - {{item.humantime()}}
+        {{item.by | assigned_or("Unknown")}} - {{item.humantime()}}
     </summary>
-    <div class="text">{{item.text | assigned_or("") | safe}}</div>
-    {% if comments.is_some() %}
-    <div class="children">{{comments | assigned_or("") | safe}}</div>
+    {% if let Some(text) = item.text %}
+    <div class="text">{{text | safe}}</div>
+    {% endif %} {% if let Some(c) = comments %}
+    <div class="children">{{c | safe}}</div>
     {% endif %}
 </details>

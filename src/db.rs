@@ -1,4 +1,4 @@
-use std::sync::{Arc, LazyLock};
+use std::sync::LazyLock;
 
 use arc_swap::ArcSwap;
 use moka::sync::Cache;
@@ -31,6 +31,6 @@ impl DB {
     }
 
     pub fn set_top(&self, ids: Vec<types::ItemID>) {
-        self.top.store(Arc::new(ids));
+        self.top.store(ids.into());
     }
 }
