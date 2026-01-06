@@ -44,6 +44,7 @@ async fn fetch_items(initial_ids: Vec<types::ItemID>) {
                 Ok(item) => {
                     let old_item = db::DB.items.get(&item.id);
                     if let Some(old) = old_item
+                        && matches!(old.item_type, Some(types::ItemType::Story))
                         && old.descendants == item.descendants
                     {
                         db::DB.items.insert(item.id, item);
