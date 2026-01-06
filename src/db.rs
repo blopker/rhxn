@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use arc_swap::ArcSwap;
-use moka::sync::Cache;
+use moka::{policy::EvictionPolicy, sync::Cache};
 
 use crate::types;
 
@@ -17,7 +17,10 @@ pub struct DB {
 impl DB {
     fn new() -> Self {
         DB {
-            items: Cache::new(CACHE_SIZE),
+            items: Cache::builder()
+                .eviction_policy(EvictionPolicy::lru())
+                .max_capacity(CACHE_SIZE)
+                .build(),
             top: ArcSwap::from_pointee(Vec::with_capacity(30)),
         }
     }

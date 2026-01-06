@@ -42,6 +42,13 @@ async fn fetch_items(initial_ids: Vec<types::ItemID>) {
         if let Some(result) = in_flight.next().await {
             match result {
                 Ok(item) => {
+                    let old_item = db::DB.items.get(&item.id);
+                    // Only refresh if there's new children
+                    if let Some(old) = old_item
+                        && old.descendants == item.descendants
+                    {
+                        return;
+                    }
                     pending.extend(item.kids.iter().copied());
                     db::DB.items.insert(item.id, item);
                 }
