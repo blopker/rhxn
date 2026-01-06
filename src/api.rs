@@ -43,14 +43,15 @@ async fn fetch_items(initial_ids: Vec<types::ItemID>) {
             match result {
                 Ok(item) => {
                     let old_item = db::DB.items.get(&item.id);
-                    // Only refresh if there's new children
                     if let Some(old) = old_item
                         && old.descendants == item.descendants
                     {
-                        return;
+                        db::DB.items.insert(item.id, item);
+                    } else {
+                        // Only refresh if there's new children
+                        pending.extend(item.kids.iter().copied());
+                        db::DB.items.insert(item.id, item);
                     }
-                    pending.extend(item.kids.iter().copied());
-                    db::DB.items.insert(item.id, item);
                 }
                 Err(e) => tracing::error!("Failed to fetch item: {}", e),
             }
